@@ -1,0 +1,14 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Asia/Shanghai
+      - NODE_ENV=production
+      - N8N_SECURE_COOKIE=false
+      - N8N_DEFAULT_LOCALE=zh-CN
+    volumes:
+      - D:/n8n_project/n8n_data:/home/node/.n8n

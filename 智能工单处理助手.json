@@ -1,0 +1,361 @@
+{
+  "name": "智能工单处理助手",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ticket",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d3b7da87-2987-453e-a255-d279c408ff50",
+      "name": "Webhook",
+      "webhookId": "994aaa77-4f0a-4dc8-baad-1b9ae29ba278"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sk-1d2fca90b9a740158ae571539f717418"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"deepseek-chat\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"你是一个工单分类助手。请将用户的问题分类为：'技术支持'、'账单咨询'或'一般咨询'，并提取出问题的核心摘要，以JSON格式返回，包含category和summary两个字段。\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.body.message }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        176,
+        0
+      ],
+      "id": "ad360265-f411-4f30-9e4e-55fa0369c4f4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.choices[0].message.content }}",
+                    "rightValue": "技术支持",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "b23526da-6c92-4723-a506-a104bfaca605"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "技术支持"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c1bd611f-a78b-48ec-82ea-1beb5384de47",
+                    "leftValue": "={{ $json.choices[0].message.content }}",
+                    "rightValue": "账单咨询",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "账单咨询"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "17b431af-652f-469f-bff1-45847a774d01",
+                    "leftValue": "={{ $json.choices[0].message.content }}",
+                    "rightValue": "一般咨询",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "一般咨询"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        384,
+        0
+      ],
+      "id": "7aa1f557-73bb-498b-8d66-04162fde82b8",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": true,
+        "resumeAmount": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        -112
+      ],
+      "id": "dfc02e55-0f53-43de-880a-bc2f1b7c9a96",
+      "name": "Wait",
+      "webhookId": "86d98742-e576-4f84-9ef4-437614581530"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": true,
+        "resumeAmount": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        80
+      ],
+      "id": "7a47a32e-5718-47cb-be0b-c03d6142285a",
+      "name": "Wait1",
+      "webhookId": "cf609b61-f250-4746-9118-4add891fbda3"
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": true,
+        "resumeAmount": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        256
+      ],
+      "id": "dd893bd1-fd28-4004-8b3c-8c7a8529b083",
+      "name": "Wait2",
+      "webhookId": "7185ba95-d2a7-47c6-8d9b-50d229e0167b"
+    },
+    {
+      "parameters": {
+        "fromEmail": "2902642402@qq.com",
+        "toEmail": "2902642402@qq.com",
+        "subject": "新工单待审批通知",
+        "html": "=<p><strong>📋 新工单需要人工审批</strong></p>\n\n<p><strong>工单内容：</strong>{{ $json.body.message }}</p>\n<p><strong>AI 分类：</strong>{{ $json.choices[0].message.content }}</p>\n\n<p>请点击以下链接处理：<br>\n<a href=\"{{ $execution.resumeUrl }}\">点击审批工单</a></p>\n\n<p>（此链接点击后即刻生效，工作流将继续执行）</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        -112
+      ],
+      "id": "595ef86b-bbbd-46ce-a724-19070ab060f9",
+      "name": "Send an Email",
+      "webhookId": "fbf1f879-6256-4520-9b59-3f81efaca977",
+      "credentials": {
+        "smtp": {
+          "id": "oaOl3V0ZPl2XYSax",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "2902642402@qq.com",
+        "toEmail": "2902642402@qq.com",
+        "subject": "新工单待审批通知",
+        "html": "=<p><strong>📋 新工单需要人工审批</strong></p>\n\n<p><strong>工单内容：</strong>{{ $json.body.message }}</p>\n<p><strong>AI 分类：</strong>{{ $json.choices[0].message.content }}</p>\n\n<p>请点击以下链接处理：<br>\n<a href=\"{{ $execution.resumeUrl }}\">点击审批工单</a></p>\n\n<p>（此链接点击后即刻生效，工作流将继续执行）</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        80
+      ],
+      "id": "016fb8ca-298b-4bc2-9e5b-45e19918beb2",
+      "name": "Send an Email1",
+      "webhookId": "fbf1f879-6256-4520-9b59-3f81efaca977",
+      "credentials": {
+        "smtp": {
+          "id": "oaOl3V0ZPl2XYSax",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "2902642402@qq.com",
+        "toEmail": "2902642402@qq.com",
+        "subject": "新工单待审批通知",
+        "html": "=<p><strong>📋 新工单需要人工审批</strong></p>\n\n<p><strong>工单内容：</strong>{{ $json.body.message }}</p>\n<p><strong>AI 分类：</strong>{{ $json.choices[0].message.content }}</p>\n\n<p>请点击以下链接处理：<br>\n<a href=\"{{ $execution.resumeUrl }}\">点击审批工单</a></p>\n\n<p>（此链接点击后即刻生效，工作流将继续执行）</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        256
+      ],
+      "id": "5ea9d8ca-b101-4a3d-a8b8-953425733acf",
+      "name": "Send an Email2",
+      "webhookId": "fbf1f879-6256-4520-9b59-3f81efaca977",
+      "credentials": {
+        "smtp": {
+          "id": "oaOl3V0ZPl2XYSax",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Send an Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Send an Email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "6ff6840b-3a92-44ca-810c-aa4b5dfb064c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7976994746baadd593288974851bf0fdd6f2822f80b4e0fe40613d91384781d0"
+  },
+  "nodeGroups": [],
+  "id": "OOOH4im5nuvAFkmg",
+  "tags": []
+}
