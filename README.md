@@ -62,13 +62,12 @@ Webhook → HTTP Request(DeepSeek) → Switch
 ## 📸 效果演示
 
 ### 工作流结构
-![工作流结构](./docs/workflow.png)
+![工作流结构](./工作流结构.png)
 
 ### 邮件通知
-![邮件通知](./docs/email.png)
+![邮件通知](./邮件通知.png)
 
-### 执行日志
-![执行日志](./docs/execution.png)
+
 
 ---
 
